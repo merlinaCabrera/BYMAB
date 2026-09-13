@@ -265,4 +265,56 @@
       playIntro(1850);
     });
   }
+
+  // =========================================================================
+  // Portfolio Dock Active Observer & Smooth Scroll
+  // =========================================================================
+  const dockItems = document.querySelectorAll('.dock-item');
+  const sectionsToObserve = [
+    { id: 'work', selector: '#work' },
+    { id: 'approach', selector: '#approach' },
+    { id: 'about', selector: '#about' },
+    { id: 'hero', selector: '#hero' },
+    { id: 'expertise', selector: '#expertise' },
+    { id: 'contact', selector: '#contact' }
+  ];
+
+  if ('IntersectionObserver' in window && dockItems.length > 0) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const pointId = entry.target.id;
+          dockItems.forEach((item) => {
+            if (item.getAttribute('data-point') === pointId) {
+              item.classList.add('active');
+            } else {
+              item.classList.remove('active');
+            }
+          });
+        }
+      });
+    }, {
+      root: null,
+      rootMargin: '-20% 0px -40% 0px',
+      threshold: 0.15
+    });
+
+    sectionsToObserve.forEach(({ selector }) => {
+      const el = document.querySelector(selector);
+      if (el) observer.observe(el);
+    });
+  }
+
+  // Smooth scroll for dock items
+  dockItems.forEach((item) => {
+    item.addEventListener('click', (e) => {
+      e.preventDefault();
+      const targetId = item.getAttribute('href');
+      const targetEl = document.querySelector(targetId);
+      if (targetEl) {
+        targetEl.scrollIntoView({ behavior: 'smooth' });
+      }
+    });
+  });
+
 })();
