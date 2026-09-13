@@ -29,44 +29,237 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 20px;
   text-align: center;
   padding: 20px;
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  min-height: 480px;
+}
+.intro-logo-wrap {
+  transform: translateY(0);
+  transition: transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+.intro-stage.menu-active .intro-logo-wrap {
+  transform: translateY(-28px) scale(0.86);
 }
 #intro-svg {
   display: block;
-  width: min(88vw, 360px);
+  width: min(88vw, 340px);
   height: auto;
   aspect-ratio: 640 / 300;
   overflow: visible;
   filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.28));
 }
-.intro-brand {
+
+/* ==========================================================================
+   Circular Orbital Navigation Hub
+   ========================================================================== */
+.circular-menu {
+  position: relative;
+  width: min(88vw, 290px);
+  height: min(88vw, 290px);
+  margin-top: -8px;
   opacity: 0;
-  transform: translateY(8px);
-  transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1), transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: scale(0.85);
   pointer-events: none;
+  transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1), transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
 }
-.intro-brand.revealed {
+.intro-stage.menu-active .circular-menu {
   opacity: 1;
-  transform: translateY(0);
+  transform: scale(1);
+  pointer-events: auto;
 }
-.intro-title {
+
+/* Central "IR AL INICIO" Button */
+.hub-center-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 92px;
+  height: 92px;
+  border-radius: 50%;
+  background: var(--paper);
+  border: 1.5px solid #DBB8BD;
+  color: var(--wine);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  z-index: 5;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35), inset 0 0 0 2px rgba(219, 184, 189, 0.25);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background 0.25s ease, box-shadow 0.25s ease;
+  padding: 0;
+}
+.hub-center-btn:hover, .hub-center-btn:focus-visible {
+  transform: translate(-50%, -50%) scale(1.08);
+  background: #FFFFFF;
+  box-shadow: 0 6px 30px rgba(219, 184, 189, 0.4), 0 0 0 4px rgba(219, 184, 189, 0.3);
+  outline: none;
+}
+.hub-center-btn:active {
+  transform: translate(-50%, -50%) scale(0.96);
+}
+.hub-center-text {
   font-family: Arial, Helvetica, sans-serif;
   font-weight: 700;
-  font-size: 20px;
-  letter-spacing: 6px;
-  color: var(--paper);
-  line-height: 1;
-  margin-bottom: 6px;
-}
-.intro-subtitle {
   font-size: 10px;
-  letter-spacing: 3px;
-  color: #dbb8bd;
-  font-weight: 500;
-  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  line-height: 1.2;
+  text-align: center;
 }
+.hub-center-arrow {
+  font-size: 14px;
+  line-height: 1;
+  color: var(--wine);
+  font-weight: 700;
+  transition: transform 0.25s ease;
+}
+.hub-center-btn:hover .hub-center-arrow {
+  transform: translateY(2px);
+}
+
+/* Background Orbital Track */
+.hub-orbit-track {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  animation: orbitSpin 60s linear infinite;
+}
+@keyframes orbitSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Satellite Orbital Nodes */
+.hub-node {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  z-index: 6;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  outline: none;
+}
+.hub-node:focus-visible .node-disc {
+  outline: 2px solid var(--paper);
+  outline-offset: 3px;
+}
+.node-work {
+  top: 10%;
+  left: 10%;
+  transform: translate(-20%, -20%);
+}
+.node-work:hover {
+  transform: translate(-20%, -20%) scale(1.12);
+}
+.node-expertise {
+  top: 10%;
+  right: 10%;
+  transform: translate(20%, -20%);
+}
+.node-expertise:hover {
+  transform: translate(20%, -20%) scale(1.12);
+}
+.node-about {
+  bottom: 10%;
+  left: 10%;
+  transform: translate(-20%, 20%);
+}
+.node-about:hover {
+  transform: translate(-20%, 20%) scale(1.12);
+}
+.node-contact {
+  bottom: 10%;
+  right: 10%;
+  transform: translate(20%, 20%);
+}
+.node-contact:hover {
+  transform: translate(20%, 20%) scale(1.12);
+}
+.hub-node:active {
+  transform: scale(0.95);
+}
+
+.node-disc {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: rgba(43, 16, 24, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(219, 184, 189, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  transition: border-color 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
+}
+.hub-node:hover .node-disc {
+  border-color: #F6F3EE;
+  background: rgba(73, 30, 42, 0.9);
+  box-shadow: 0 6px 20px rgba(219, 184, 189, 0.35);
+}
+.node-disc svg {
+  display: block;
+}
+.node-label {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #dbb8bd;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: color 0.25s ease;
+}
+.hub-node:hover .node-label {
+  color: var(--paper);
+}
+
+@media (max-width: 480px) {
+  .intro-stage {
+    padding: 12px;
+    min-height: 440px;
+  }
+  .intro-stage.menu-active .intro-logo-wrap {
+    transform: translateY(-20px) scale(0.82);
+  }
+  .circular-menu {
+    width: 250px;
+    height: 250px;
+  }
+  .hub-center-btn {
+    width: 82px;
+    height: 82px;
+  }
+  .hub-center-text {
+    font-size: 9px;
+    letter-spacing: 1px;
+  }
+  .node-disc {
+    width: 46px;
+    height: 46px;
+  }
+  .node-disc svg {
+    width: 30px;
+    height: 30px;
+  }
+  .node-label {
+    font-size: 8px;
+    letter-spacing: 1.5px;
+  }
+}
+
 .hero h1, .eyebrow, .hero-bottom {
   transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }

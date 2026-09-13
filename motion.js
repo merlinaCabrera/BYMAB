@@ -1,12 +1,14 @@
 ﻿/**
- * BYMAB Studio — The Convergence Motion Narrative
- * Fluid Vector Morphing: Strategy × Creative Instinct
- * Continuous Mathematical Geometry (Zero crossfade slides)
+ * BYMAB Studio — The Convergence Motion Narrative & Circular Orbital Navigation
+ * Continuous Mathematical Geometry & Interactive Hub
  */
 (() => {
   const curtain = document.getElementById('intro-curtain');
+  const stage = document.getElementById('intro-stage');
   const svg = document.getElementById('intro-svg');
-  const brand = document.getElementById('intro-brand');
+  const btnHome = document.getElementById('btn-home');
+  const menuNodes = document.querySelectorAll('.hub-node');
+
   if (!curtain || !svg) return;
 
   // Geometry Constants
@@ -41,21 +43,15 @@
 
     // =========================================================================
     // 1. PHYSICAL GLIDE (t: 0.0 -> 0.48)
-    // The two circles travel smoothly across the screen toward the center.
     // =========================================================================
     const glideProgress = easeOutCubic(t / 0.48);
-    // Center of circle 1 (left) moves from -startC to -targetC
     const c1 = -startC + (startC - targetC) * glideProgress;
-    // Center of circle 2 (right) moves from +startC to +targetC
     const c2 = startC - (startC - targetC) * glideProgress;
     const d = c2 - c1;
-
-    // Fades for circle entry
     const entryOpacity = clamp(t / 0.10);
 
     // =========================================================================
     // 2. INTERSECTION FORMATION (Active as soon as d < 2*R)
-    // Dynamic height and width of the intersecting lens
     // =========================================================================
     let hasIntersection = false;
     let h = 0;
@@ -65,42 +61,34 @@
       hasIntersection = true;
       const halfD = d / 2;
       h = Math.sqrt(Math.max(0, R * R - halfD * halfD));
-
-      // Right arc along circle 1 (center c1 < 0) from (0, -h) to (0, h)
-      // Left arc along circle 2 (center c2 > 0) from (0, h) to (0, -h)
       lensPath = `M 0 ${-h.toFixed(2)} A ${R} ${R} 0 0 1 0 ${h.toFixed(2)} A ${R} ${R} 0 0 1 0 ${(-h).toFixed(2)} Z`;
     }
 
     // =========================================================================
     // 3. FUSION & OUTER CIRCLES DISSOLVE (t: 0.48 -> 0.70)
-    // Once circles reach target c = 75, outer arcs dissolve into the lens tips
     // =========================================================================
     const outerFadeProgress = clamp((t - 0.46) / 0.22);
     const outerOpacity = (1 - easeInOutQuad(outerFadeProgress)) * entryOpacity;
-
-    // Lens stroke weight intensifies and clarifies as fusion completes
     const lensWeight = 2.4 + 1.1 * clamp((t - 0.35) / 0.30);
 
-    // Lateral accent ring fades and rotates into place (t: 0.52 -> 0.76)
+    // Lateral accent ring
     const sideAuraProgress = easeOutCubic((t - 0.52) / 0.22);
-    const sideAuraAngle = (1 - sideAuraProgress) * 25; // 25deg rotation to 0deg
+    const sideAuraAngle = (1 - sideAuraProgress) * 25;
 
     // =========================================================================
     // 4. CLARITY DIAMOND IGNITION (t: 0.65 -> 0.88)
-    // Central diamond springs to life at the exact focal center
     // =========================================================================
     const diamondT = clamp((t - 0.65) / 0.20);
     const diamondScale = diamondT > 0 ? easeOutBack(diamondT) : 0;
     const diamondOpacity = clamp(diamondT * 1.5);
 
     // =========================================================================
-    // 5. BREATHING PULSE (t: 0.88 -> 1.0)
-    // Whole assembled symbol takes an organic breath
+    // 5. BREATHING PULSE (t: 0.86 -> 1.0)
     // =========================================================================
     let breathScale = 1;
     if (t > 0.86) {
       const p = (t - 0.86) / 0.14;
-      breathScale = 1 + 0.035 * Math.sin(p * Math.PI);
+      breathScale = 1 + 0.03 * Math.sin(p * Math.PI);
     }
 
     // Compose SVG
@@ -136,13 +124,11 @@
       `;
     }
 
-    // 2. The Living Intersecting Lens (Dynamically shaped by circle positions)
+    // 2. The Living Intersecting Lens
     if (hasIntersection) {
       const lensAlpha = clamp((t - 0.20) / 0.25);
       markup += `
-        <!-- Dynamic Lens Fill Glow -->
         <path d="${lensPath}" fill="url(#lensShimmer)" opacity="${lensAlpha.toFixed(3)}"/>
-        <!-- Dynamic Lens Boundary -->
         <path d="${lensPath}" stroke="#F6F3EE" stroke-width="${lensWeight.toFixed(2)}"
           stroke-linejoin="round" fill="none" opacity="${lensAlpha.toFixed(3)}"/>
       `;
@@ -172,30 +158,27 @@
 
     svg.innerHTML = markup;
 
-    // 5. Brand Reveal
-    if (brand) {
-      if (t >= 0.70 && !brand.classList.contains('revealed')) {
-        brand.classList.add('revealed');
-      } else if (t < 0.70 && brand.classList.contains('revealed')) {
-        brand.classList.remove('revealed');
+    // Trigger Logo Elevation and Circular Menu Blossom (t >= 0.78)
+    if (stage) {
+      if (t >= 0.78 && !stage.classList.contains('menu-active')) {
+        stage.classList.add('menu-active');
+      } else if (t < 0.78 && stage.classList.contains('menu-active')) {
+        stage.classList.remove('menu-active');
       }
     }
   }
 
-  function playIntro(duration = 2100) {
+  function playIntro(duration = 2000) {
     // Accessibility check
     if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       renderFrame(1);
-      setTimeout(() => {
-        curtain.classList.add('intro-done');
-        document.body.classList.add('intro-finished');
-      }, 150);
+      if (stage) stage.classList.add('menu-active');
       return;
     }
 
     curtain.classList.remove('intro-done');
     curtain.style.pointerEvents = 'auto';
-    if (brand) brand.classList.remove('revealed');
+    if (stage) stage.classList.remove('menu-active');
 
     let animId;
     const start = performance.now();
@@ -207,36 +190,74 @@
 
       if (progress < 1) {
         animId = requestAnimationFrame(step);
-      } else {
-        // Hold clarity for a brief moment, then smoothly unveil portfolio
-        setTimeout(() => {
-          curtain.classList.add('intro-done');
-          document.body.classList.add('intro-finished');
-        }, 280);
       }
+      // Note: At progress === 1, we deliberately DO NOT auto-dismiss.
+      // The logo remains elevated and the circular orbital menu invites the user!
     }
 
     animId = requestAnimationFrame(step);
   }
 
+  // Smoothly unveil site and navigate to destination
+  function unveilSite(targetSelector = null) {
+    curtain.classList.add('intro-done');
+    document.body.classList.add('intro-finished');
+
+    if (targetSelector && targetSelector !== '#hero') {
+      const targetEl = document.querySelector(targetSelector);
+      if (targetEl) {
+        setTimeout(() => {
+          targetEl.scrollIntoView({ behavior: 'smooth' });
+        }, 300);
+      }
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
+
+  // Bind Central Home Button
+  if (btnHome) {
+    btnHome.addEventListener('click', (e) => {
+      e.preventDefault();
+      unveilSite('#hero');
+    });
+  }
+
+  // Bind Satellite Orbital Nodes
+  menuNodes.forEach((node) => {
+    const handler = (e) => {
+      e.preventDefault();
+      const target = node.getAttribute('data-target');
+      unveilSite(target);
+    };
+
+    node.addEventListener('click', handler);
+    node.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        handler(e);
+      }
+    });
+  });
+
   // Auto-play on direct visit, refresh, and load
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => playIntro(2100));
+    document.addEventListener('DOMContentLoaded', () => playIntro(2050));
   } else {
-    playIntro(2100);
+    playIntro(2050);
   }
 
   // Expose global controller
-  window.BYMABIntro = { play: playIntro };
+  window.BYMABIntro = {
+    play: playIntro,
+    unveil: unveilSite
+  };
 
   // Replay on clicking brand logo in header
   const brandLink = document.querySelector('header .brand');
   if (brandLink) {
     brandLink.addEventListener('click', (e) => {
-      if (window.scrollY < 80) {
-        e.preventDefault();
-        playIntro(1950);
-      }
+      e.preventDefault();
+      playIntro(1850);
     });
   }
 })();
