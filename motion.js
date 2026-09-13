@@ -1,6 +1,7 @@
 ﻿/**
  * BYMAB Studio — The Convergence Motion Narrative
- * Strategy × Creative Instinct
+ * Fluid Vector Morphing: Strategy × Creative Instinct
+ * Continuous Mathematical Geometry (Zero crossfade slides)
  */
 (() => {
   const curtain = document.getElementById('intro-curtain');
@@ -8,119 +9,187 @@
   const brand = document.getElementById('intro-brand');
   if (!curtain || !svg) return;
 
-  const lensPath = 'M0 -100 C66 -42 66 42 0 100 C-66 42 -66 -42 0 -100Z';
-  const diamondPath = 'M0 -36 24 0 0 36 -24 0Z';
+  // Geometry Constants
+  // Two circles of radius R = 125 centered at c1 = -75 and c2 = +75
+  // exactly intersect at (0, -100) and (0, +100), with width -50 to +50.
+  const R = 125;
+  const targetC = 75;
+  const startC = 175;
 
-  const clamp = (x) => Math.max(0, Math.min(1, x));
-  const ease = (x) => {
+  // Easing helpers
+  const clamp = (v, min = 0, max = 1) => Math.max(min, Math.min(max, v));
+
+  const easeOutCubic = (x) => {
     x = clamp(x);
-    return x * x * (3 - 2 * x);
-  };
-  const cubic = (x) => {
-    x = clamp(x);
-    // Custom cubic-bezier approximation for luxury deceleration
     return 1 - Math.pow(1 - x, 3);
+  };
+
+  const easeInOutQuad = (x) => {
+    x = clamp(x);
+    return x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
+  };
+
+  const easeOutBack = (x) => {
+    x = clamp(x);
+    const c1 = 1.6;
+    const c3 = c1 + 1;
+    return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2);
   };
 
   function renderFrame(t) {
     t = clamp(t);
-    const e = ease(t);
 
-    // 01 / ANALYSIS & 02 / INTUITION (Circles approach and overlap)
-    // Between t=0 and t=0.55: circles move from +/-95 towards +/-35
-    const approach = ease(t / 0.52);
-    const circleFade = 1 - ease((t - 0.38) / 0.28);
-    const cxLeft = -95 + 60 * approach;
-    const cxRight = 95 - 60 * approach;
+    // =========================================================================
+    // 1. PHYSICAL GLIDE (t: 0.0 -> 0.48)
+    // The two circles travel smoothly across the screen toward the center.
+    // =========================================================================
+    const glideProgress = easeOutCubic(t / 0.48);
+    // Center of circle 1 (left) moves from -startC to -targetC
+    const c1 = -startC + (startC - targetC) * glideProgress;
+    // Center of circle 2 (right) moves from +startC to +targetC
+    const c2 = startC - (startC - targetC) * glideProgress;
+    const d = c2 - c1;
 
-    // 03 / CONVERGENCE (The lens aperture coalesces)
-    const lensOpacity = ease((t - 0.35) / 0.28);
-    const sideAuraOpacity = ease((t - 0.48) / 0.28) * 0.7;
+    // Fades for circle entry
+    const entryOpacity = clamp(t / 0.10);
 
-    // 04 / CLARITY (The diamond ignites and blooms)
-    const diamondProgress = ease((t - 0.64) / 0.26);
-    const diamondScale = 0.6 + 0.4 * diamondProgress;
-    const diamondOpacity = diamondProgress;
+    // =========================================================================
+    // 2. INTERSECTION FORMATION (Active as soon as d < 2*R)
+    // Dynamic height and width of the intersecting lens
+    // =========================================================================
+    let hasIntersection = false;
+    let h = 0;
+    let lensPath = '';
 
-    // Pulse at finish (t > 0.90)
-    let pulseScale = 1;
-    if (t > 0.88) {
-      const p = (t - 0.88) / 0.12;
-      pulseScale = 1 + 0.08 * Math.sin(p * Math.PI);
+    if (d < 2 * R) {
+      hasIntersection = true;
+      const halfD = d / 2;
+      h = Math.sqrt(Math.max(0, R * R - halfD * halfD));
+
+      // Right arc along circle 1 (center c1 < 0) from (0, -h) to (0, h)
+      // Left arc along circle 2 (center c2 > 0) from (0, h) to (0, -h)
+      lensPath = `M 0 ${-h.toFixed(2)} A ${R} ${R} 0 0 1 0 ${h.toFixed(2)} A ${R} ${R} 0 0 1 0 ${(-h).toFixed(2)} Z`;
     }
 
+    // =========================================================================
+    // 3. FUSION & OUTER CIRCLES DISSOLVE (t: 0.48 -> 0.70)
+    // Once circles reach target c = 75, outer arcs dissolve into the lens tips
+    // =========================================================================
+    const outerFadeProgress = clamp((t - 0.46) / 0.22);
+    const outerOpacity = (1 - easeInOutQuad(outerFadeProgress)) * entryOpacity;
+
+    // Lens stroke weight intensifies and clarifies as fusion completes
+    const lensWeight = 2.4 + 1.1 * clamp((t - 0.35) / 0.30);
+
+    // Lateral accent ring fades and rotates into place (t: 0.52 -> 0.76)
+    const sideAuraProgress = easeOutCubic((t - 0.52) / 0.22);
+    const sideAuraAngle = (1 - sideAuraProgress) * 25; // 25deg rotation to 0deg
+
+    // =========================================================================
+    // 4. CLARITY DIAMOND IGNITION (t: 0.65 -> 0.88)
+    // Central diamond springs to life at the exact focal center
+    // =========================================================================
+    const diamondT = clamp((t - 0.65) / 0.20);
+    const diamondScale = diamondT > 0 ? easeOutBack(diamondT) : 0;
+    const diamondOpacity = clamp(diamondT * 1.5);
+
+    // =========================================================================
+    // 5. BREATHING PULSE (t: 0.88 -> 1.0)
+    // Whole assembled symbol takes an organic breath
+    // =========================================================================
+    let breathScale = 1;
+    if (t > 0.86) {
+      const p = (t - 0.86) / 0.14;
+      breathScale = 1 + 0.035 * Math.sin(p * Math.PI);
+    }
+
+    // Compose SVG
     let markup = `
       <defs>
-        <filter id="clarityGlow" x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur"/>
+        <filter id="diamondBloom" x="-60%" y="-60%" width="220%" height="220%">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="5" result="glow"/>
           <feMerge>
-            <feMergeNode in="blur"/>
+            <feMergeNode in="glow"/>
             <feMergeNode in="SourceGraphic"/>
           </feMerge>
         </filter>
+        <radialGradient id="lensShimmer" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#DBB8BD" stop-opacity="0.18"/>
+          <stop offset="100%" stop-color="#491E2A" stop-opacity="0"/>
+        </radialGradient>
       </defs>
+      <g transform="scale(${breathScale.toFixed(4)})">
     `;
 
-    // Phase 1: Circles
-    if (circleFade > 0.001) {
+    // 1. Moving Circles (Outer wings)
+    if (outerOpacity > 0.005) {
       markup += `
-        <g opacity="${circleFade}">
-          <!-- Strategy Circle (Solid) -->
-          <circle cx="${cxLeft}" cy="0" r="76" stroke="#F6F3EE" stroke-width="3.5" fill="none" opacity="${ease(t / 0.25)}"/>
-          <!-- Creative Instinct Circle (Dashed) -->
-          <circle cx="${cxRight}" cy="0" r="76" stroke="#DBB8BD" stroke-width="3" stroke-dasharray="3 7" fill="none" opacity="${ease(t / 0.2)}"/>
+        <!-- Strategy Circle 01 (Solid Line, gliding from left) -->
+        <circle cx="${c1.toFixed(2)}" cy="0" r="${R}"
+          stroke="#F6F3EE" stroke-width="3" fill="none"
+          opacity="${outerOpacity.toFixed(3)}"/>
+
+        <!-- Creative Instinct Circle 02 (Dashed Line, gliding from right) -->
+        <circle cx="${c2.toFixed(2)}" cy="0" r="${R}"
+          stroke="#DBB8BD" stroke-width="2.8" stroke-dasharray="4 8" fill="none"
+          opacity="${outerOpacity.toFixed(3)}"/>
+      `;
+    }
+
+    // 2. The Living Intersecting Lens (Dynamically shaped by circle positions)
+    if (hasIntersection) {
+      const lensAlpha = clamp((t - 0.20) / 0.25);
+      markup += `
+        <!-- Dynamic Lens Fill Glow -->
+        <path d="${lensPath}" fill="url(#lensShimmer)" opacity="${lensAlpha.toFixed(3)}"/>
+        <!-- Dynamic Lens Boundary -->
+        <path d="${lensPath}" stroke="#F6F3EE" stroke-width="${lensWeight.toFixed(2)}"
+          stroke-linejoin="round" fill="none" opacity="${lensAlpha.toFixed(3)}"/>
+      `;
+    }
+
+    // 3. Lateral Accent Ticks
+    if (sideAuraProgress > 0.005) {
+      markup += `
+        <g transform="rotate(${sideAuraAngle.toFixed(2)})" opacity="${sideAuraProgress.toFixed(3)}">
+          <ellipse cx="0" cy="0" rx="84" ry="84"
+            stroke="#DBB8BD" stroke-width="1.6" stroke-dasharray="2 7" fill="none"/>
         </g>
       `;
     }
 
-    // Phase 2: Lateral Accent Ring
-    if (sideAuraOpacity > 0.001) {
+    // 4. Focal Clarity Diamond
+    if (diamondScale > 0.005) {
       markup += `
-        <g opacity="${sideAuraOpacity}">
-          <ellipse cx="0" cy="0" rx="84" ry="84" stroke="#DBB8BD" stroke-width="1.6" stroke-dasharray="2 7" fill="none"/>
+        <g transform="scale(${diamondScale.toFixed(4)})" opacity="${diamondOpacity.toFixed(3)}"
+           filter="${t > 0.80 ? 'url(#diamondBloom)' : 'none'}">
+          <polygon points="0,-36 24,0 0,36 -24,0" fill="#DBB8BD"/>
         </g>
       `;
     }
 
-    // Phase 3: Coalesced Optical Lens
-    if (lensOpacity > 0.001) {
-      markup += `
-        <g opacity="${lensOpacity}">
-          <path d="${lensPath}" stroke="#F6F3EE" stroke-width="3.5" stroke-linejoin="round" fill="none"/>
-        </g>
-      `;
-    }
-
-    // Phase 4: Center Diamond
-    if (diamondOpacity > 0.001) {
-      const totalScale = diamondScale * pulseScale;
-      markup += `
-        <g opacity="${diamondOpacity}" transform="scale(${totalScale})" filter="${t > 0.82 ? 'url(#clarityGlow)' : 'none'}">
-          <path d="${diamondPath}" fill="#DBB8BD" stroke="none"/>
-        </g>
-      `;
-    }
+    markup += `</g>`;
 
     svg.innerHTML = markup;
 
-    // Brand Reveal (subtle text below)
+    // 5. Brand Reveal
     if (brand) {
-      if (t >= 0.72 && !brand.classList.contains('revealed')) {
+      if (t >= 0.70 && !brand.classList.contains('revealed')) {
         brand.classList.add('revealed');
-      } else if (t < 0.72 && brand.classList.contains('revealed')) {
+      } else if (t < 0.70 && brand.classList.contains('revealed')) {
         brand.classList.remove('revealed');
       }
     }
   }
 
-  function playIntro(duration = 1800) {
-    // Reduced motion preference
+  function playIntro(duration = 2100) {
+    // Accessibility check
     if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       renderFrame(1);
       setTimeout(() => {
         curtain.classList.add('intro-done');
         document.body.classList.add('intro-finished');
-      }, 200);
+      }, 150);
       return;
     }
 
@@ -139,34 +208,34 @@
       if (progress < 1) {
         animId = requestAnimationFrame(step);
       } else {
-        // Complete motion with a breath, then unveil the site
+        // Hold clarity for a brief moment, then smoothly unveil portfolio
         setTimeout(() => {
           curtain.classList.add('intro-done');
           document.body.classList.add('intro-finished');
-        }, 220);
+        }, 280);
       }
     }
 
     animId = requestAnimationFrame(step);
   }
 
-  // Auto-run immediately on page load / refresh
+  // Auto-play on direct visit, refresh, and load
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => playIntro(1850));
+    document.addEventListener('DOMContentLoaded', () => playIntro(2100));
   } else {
-    playIntro(1850);
+    playIntro(2100);
   }
 
-  // Expose global controller & allow re-playing by clicking header brand
+  // Expose global controller
   window.BYMABIntro = { play: playIntro };
 
+  // Replay on clicking brand logo in header
   const brandLink = document.querySelector('header .brand');
   if (brandLink) {
     brandLink.addEventListener('click', (e) => {
-      // Re-trigger intro if desired
-      if (window.scrollY < 50) {
+      if (window.scrollY < 80) {
         e.preventDefault();
-        playIntro(1750);
+        playIntro(1950);
       }
     });
   }
