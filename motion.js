@@ -1,4 +1,4 @@
-﻿/**
+/**
  * BYMAB Studio — The Convergence Motion Narrative & Circular Orbital Navigation
  * Continuous Mathematical Geometry & Interactive Hub
  */
@@ -227,6 +227,11 @@
   menuNodes.forEach((node) => {
     const handler = (e) => {
       e.preventDefault();
+      const action = node.getAttribute('data-action');
+      if (action === 'replay') {
+        playIntro(2050);
+        return;
+      }
       const target = node.getAttribute('data-target');
       unveilSite(target);
     };
